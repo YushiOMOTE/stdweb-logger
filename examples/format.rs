@@ -3,7 +3,9 @@ use log::*;
 fn main() {
     stdweb::initialize();
 
-    stdweb_logger::init();
+    stdweb_logger::builder()
+        .format(|r| format!("{}: {}: {}", r.level(), r.target(), r.args()))
+        .build();
 
     error!("{} -> {}", "test1", 1);
     warn!("{} -> {}", "test2", 2);

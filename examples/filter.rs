@@ -3,7 +3,7 @@ use log::*;
 fn main() {
     stdweb::initialize();
 
-    stdweb_logger::init();
+    stdweb_logger::init_with_level(Level::Warn);
 
     error!("{} -> {}", "test1", 1);
     warn!("{} -> {}", "test2", 2);
