@@ -12,7 +12,7 @@ fn main() {
     stdweb_logger::init();
 
     // Log
-    info!("{} -> {}", "Chin", "Tama");
+    info!("{}!", "Hello");
 
     stdweb::event_loop();
 }
