@@ -32,6 +32,11 @@ impl Builder {
         Self
     }
 
+    pub fn format(self, fmt: impl Fn(&Record) -> String + Send + Sync + 'static) -> Self {
+        CONFIG.lock().unwrap().format = Box::new(fmt);
+        self
+    }
+
     pub fn filter(self, filter: LevelFilter) -> Self {
         CONFIG.lock().unwrap().filter = filter;
         self
