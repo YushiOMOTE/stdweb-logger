@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Yushi Omote <yushiomote@gmail.com>"]
 edition = "2018"
 license = "MIT"
+description = "Logger for stdweb"
 
 [dependencies]
 log = { version = "0.4", features = ["std"] }
