@@ -1,10 +1,13 @@
 [package]
 name = "stdweb-logger"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Yushi Omote <yushiomote@gmail.com>"]
 edition = "2018"
 license = "MIT"
+repository = "https://github.com/YushiOMOTE/stdweb-logger"
 description = "Logger for stdweb"
+keywords = ["log", "stdweb"]
+readme = "README.md"
 
 [dependencies]
 log = { version = "0.4", features = ["std"] }
