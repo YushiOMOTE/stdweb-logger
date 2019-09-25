@@ -16,6 +16,9 @@ impl Logger {
     }
 }
 
+///
+/// Builder object to build a logger
+///
 pub struct Builder {
     logger: Logger,
 }
@@ -27,6 +30,9 @@ impl Builder {
         }
     }
 
+    ///
+    /// Set a function which is called every time logger formats strings
+    ///
     pub fn format(
         mut self,
         fmt: impl Fn(&mut String, &Record) -> std::fmt::Result + Send + Sync + 'static,
@@ -35,11 +41,17 @@ impl Builder {
         self
     }
 
+    ///
+    /// Set log level filter
+    ///
     pub fn filter(mut self, filter: LevelFilter) -> Self {
         self.logger.filter = filter;
         self
     }
 
+    ///
+    /// Show more detail (line numbers, file names etc.) in log
+    ///
     pub fn detail(mut self) -> Self {
         self.logger.format = Box::new(|s, r| {
             write!(
@@ -54,6 +66,9 @@ impl Builder {
         self
     }
 
+    ///
+    /// Sets the logger
+    ///
     pub fn build(self) {
         let level = self.logger.filter.clone();
         if set_boxed_logger(Box::new(self.logger)).is_ok() {
@@ -89,14 +104,23 @@ impl log::Log for Logger {
     fn flush(&self) {}
 }
 
+///
+/// Initialize logger with default settings
+///
 pub fn init() {
     builder().build()
 }
 
+///
+/// Create a builder for a logger
+///
 pub fn builder() -> Builder {
     Builder::new()
 }
 
+///
+/// Initialize logger with specified log level
+///
 pub fn init_with_level(level: Level) {
     builder().filter(level.to_level_filter()).build()
 }
