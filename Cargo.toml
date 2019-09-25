@@ -1,8 +1,9 @@
 [package]
 name = "stdweb-logger"
 version = "0.1.0"
-authors = ["Yushi Omote <yushi.omote@sbibits.com>"]
+authors = ["Yushi Omote <yushiomote@gmail.com>"]
 edition = "2018"
+license = "MIT"
 
 [dependencies]
 log = "0.4"
