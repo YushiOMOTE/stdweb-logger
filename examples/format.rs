@@ -1,10 +1,11 @@
 use log::*;
+use std::fmt::Write;
 
 fn main() {
     stdweb::initialize();
 
     stdweb_logger::builder()
-        .format(|r| format!("{}: {}: {}", r.level(), r.target(), r.args()))
+        .format(|s, r| write!(s, "{}: {}: {}", r.level(), r.target(), r.args()))
         .build();
 
     error!("{} -> {}", "test1", 1);

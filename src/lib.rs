@@ -1,50 +1,49 @@
-use lazy_static::lazy_static;
 use log::*;
-use std::sync::{Arc, Mutex};
+use std::fmt::Write;
 use stdweb::js;
 
-static LOGGER: Logger = Logger;
-
-lazy_static! {
-    static ref CONFIG: Arc<Mutex<Config>> = Arc::new(Mutex::new(Config::new()));
-}
-
-struct Logger;
-
-struct Config {
+struct Logger {
     filter: LevelFilter,
-    format: Box<dyn Fn(&Record) -> String + Send + Sync + 'static>,
+    format: Box<dyn Fn(&mut String, &Record) -> std::fmt::Result + Send + Sync + 'static>,
 }
 
-impl Config {
+impl Logger {
     fn new() -> Self {
         Self {
             filter: LevelFilter::Trace,
-            format: Box::new(|r| format!("{}: {}", r.level(), r.args())),
+            format: Box::new(|s, r| write!(s, "{}: {}", r.level(), r.args())),
         }
     }
 }
 
-pub struct Builder;
+pub struct Builder {
+    logger: Logger,
+}
 
 impl Builder {
     fn new() -> Self {
-        Self
+        Self {
+            logger: Logger::new(),
+        }
     }
 
-    pub fn format(self, fmt: impl Fn(&Record) -> String + Send + Sync + 'static) -> Self {
-        CONFIG.lock().unwrap().format = Box::new(fmt);
+    pub fn format(
+        mut self,
+        fmt: impl Fn(&mut String, &Record) -> std::fmt::Result + Send + Sync + 'static,
+    ) -> Self {
+        self.logger.format = Box::new(fmt);
         self
     }
 
-    pub fn filter(self, filter: LevelFilter) -> Self {
-        CONFIG.lock().unwrap().filter = filter;
+    pub fn filter(mut self, filter: LevelFilter) -> Self {
+        self.logger.filter = filter;
         self
     }
 
-    pub fn detail(self) -> Self {
-        CONFIG.lock().unwrap().format = Box::new(|r| {
-            format!(
+    pub fn detail(mut self) -> Self {
+        self.logger.format = Box::new(|s, r| {
+            write!(
+                s,
                 "{}: {} ({}({}))",
                 r.level(),
                 r.args(),
@@ -56,37 +55,42 @@ impl Builder {
     }
 
     pub fn build(self) {
-        if set_logger(&LOGGER).is_ok() {
-            set_max_level(CONFIG.lock().unwrap().filter);
+        let level = self.logger.filter.clone();
+        if set_boxed_logger(Box::new(self.logger)).is_ok() {
+            set_max_level(level);
         }
     }
 }
 
 impl log::Log for Logger {
     fn enabled(&self, m: &Metadata) -> bool {
-        match CONFIG.lock().unwrap().filter.to_level() {
+        match self.filter.to_level() {
             Some(level) => m.level() <= level,
             None => false,
         }
     }
 
     fn log(&self, record: &Record) {
-        let s = (CONFIG.lock().unwrap().format)(record);
+        let mut s = String::new();
 
-        match record.level() {
-            Level::Error => js! { console.error(@{s}); },
-            Level::Warn => js! { console.warn(@{s}); },
-            Level::Info => js! { console.info(@{s}); },
-            Level::Debug => js! { console.debug(@{s}); },
-            Level::Trace => js! { console.trace(@{s}); },
-        };
+        if let Err(e) = (self.format)(&mut s, record) {
+            js! { @(no_return) console.error(@{e.to_string()}); }
+        } else {
+            match record.level() {
+                Level::Error => js! { @(no_return) console.error(@{s}); },
+                Level::Warn => js! { @(no_return) console.warn(@{s}); },
+                Level::Info => js! { @(no_return) console.info(@{s}); },
+                Level::Debug => js! { @(no_return) console.debug(@{s}); },
+                Level::Trace => js! { @(no_return) console.trace(@{s}); },
+            }
+        }
     }
 
     fn flush(&self) {}
 }
 
 pub fn init() {
-    builder().filter(LevelFilter::Trace).build()
+    builder().build()
 }
 
 pub fn builder() -> Builder {
