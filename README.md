@@ -2,6 +2,10 @@
 
 Logger for stdweb
 
+[![Latest version](https://img.shields.io/crates/v/log.svg)](https://img.shields.io/crates/v/stdweb-logger.svg)
+[![Documentation](https://docs.rs/stdweb-logger/badge.svg)](https://docs.rs/stdweb-logger)
+![License](https://img.shields.io/crates/l/stdweb-logger.svg)
+
 ```rust
 use log::*;
 
